@@ -5,8 +5,10 @@
 import FlutterMacOS
 import Foundation
 
-import window_size
+import screen_retriever_macos
+import window_manager
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-  WindowSizePlugin.register(with: registry.registrar(forPlugin: "WindowSizePlugin"))
+  ScreenRetrieverMacosPlugin.register(with: registry.registrar(forPlugin: "ScreenRetrieverMacosPlugin"))
+  WindowManagerPlugin.register(with: registry.registrar(forPlugin: "WindowManagerPlugin"))
 }

@@ -1,16 +1,28 @@
 // main.dart
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:retro_pi/pages/home.dart';
-import 'package:window_size/window_size.dart'; // pub.dev/packages/window_size
-import 'dart:io';
+import 'package:window_manager/window_manager.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    setWindowTitle('Retro Pi');
-    setWindowMinSize(const Size(1280, 720));
-    setWindowMaxSize(const Size(1280, 720));
+    await windowManager.ensureInitialized();
+
+  const WindowOptions windowOptions = WindowOptions(
+    size: Size(1280, 720), // ou 1920, 1080 selon ton écran
+    minimumSize: Size(1280, 720),
+    maximumSize: Size(1280, 720),
+    titleBarStyle: TitleBarStyle.hidden,
+    backgroundColor: Colors.black,
+  );
+
+
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
   }
 
   runApp(const MyApp());
@@ -18,11 +30,11 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(        // ← On associe la clé ici
+    return MaterialApp(
       themeMode: ThemeMode.system,
-      // (Vos thèmes)
       debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );
