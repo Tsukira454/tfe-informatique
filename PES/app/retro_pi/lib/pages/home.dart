@@ -235,38 +235,12 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildPowerButton(
-                    icon: Icons.power_settings_new,
-                    label: "Éteindre",
-                    color: Colors.redAccent,
+                    icon: Icons.exit_to_app,
+                    label: "Quitter",
+                    color: Colors.orangeAccent,
                     onTap: () {
                       Navigator.pop(context);
-                      _showConfirmDialog(
-                        "Éteindre",
-                        "Voulez-vous éteindre le système ?",
-                        () => _executeCommand("sudo shutdown -h now"),
-                      );
-                    },
-                  ),
-                  _buildPowerButton(
-                    icon: Icons.bedtime,
-                    label: "Veille",
-                    color: Colors.amberAccent,
-                    onTap: () {
-                      Navigator.pop(context);
-                      _executeCommand("sudo systemctl suspend");
-                    },
-                  ),
-                  _buildPowerButton(
-                    icon: Icons.restart_alt,
-                    label: "Redémarrer",
-                    color: Colors.greenAccent,
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showConfirmDialog(
-                        "Redémarrer",
-                        "Voulez-vous redémarrer le système ?",
-                        () => _executeCommand("sudo shutdown -r now"),
-                      );
+                      exit(0);
                     },
                   ),
                 ],
@@ -278,32 +252,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showConfirmDialog(
-    String title,
-    String message,
-    VoidCallback onConfirm,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Annuler"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onConfirm();
-            },
-            child: const Text("Confirmer"),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildPowerButton({
     required IconData icon,
