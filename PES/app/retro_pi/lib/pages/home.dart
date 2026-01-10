@@ -74,7 +74,7 @@ class _HomePageState extends State<HomePage> {
     Game(
       name: "supertux",
       imagePath: "assets/game/supertux.png",
-      command: "supertux",
+      command: "supertux2",
       accentColor: Colors.purpleAccent,
     )
   ];
