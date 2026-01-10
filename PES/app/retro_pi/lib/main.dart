@@ -12,7 +12,7 @@ void main() async {
 
     // ✅ On assigne les options à une variable
     const WindowOptions windowOptions = WindowOptions(
-      fullScreen: false,               // pas de plein écran total
+      fullScreen: true,               // pas de plein écran total
       titleBarStyle: TitleBarStyle.hidden, // barre cachée mais fenêtre normale
       size: Size(1280, 720),           // taille de la fenêtre
       minimumSize: Size(1280, 720),
