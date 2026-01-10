@@ -235,6 +235,32 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildPowerButton(
+                    icon: Icons.power_settings_new,
+                    label: "Arrêter",
+                    color: Colors.redAccent,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showConfirmDialog(
+                        "Arrêter",
+                        "Voulez-vous arrêter le système ?",
+                        () => _executeCommand("sudo shutdown -h now"),
+                      );
+                    },
+                  ),
+                  _buildPowerButton(
+                    icon: Icons.restart_alt,
+                    label: "Redémarrer",
+                    color: Colors.greenAccent,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showConfirmDialog(
+                        "Redémarrer",
+                        "Voulez-vous redémarrer le système ?",
+                        () => _executeCommand("sudo shutdown -r now"),
+                      );
+                    },
+                  ),
+                  _buildPowerButton(
                     icon: Icons.exit_to_app,
                     label: "Quitter",
                     color: Colors.orangeAccent,
@@ -249,6 +275,33 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       },
+    );
+  }
+
+  void _showConfirmDialog(
+    String title,
+    String message,
+    VoidCallback onConfirm,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Annuler"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onConfirm();
+            },
+            child: const Text("Confirmer"),
+          ),
+        ],
+      ),
     );
   }
 
