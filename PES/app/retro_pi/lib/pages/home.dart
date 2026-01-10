@@ -39,6 +39,21 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// --- MODÈLE DE JEU ---
+class Game {
+  final String name;
+  final String imagePath;
+  final String command;
+  final Color accentColor;
+
+  Game({
+    required this.name,
+    required this.imagePath,
+    required this.command,
+    this.accentColor = Colors.blueAccent,
+  });
+}
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -53,6 +68,16 @@ class _HomePageState extends State<HomePage> {
 
   List<String> _accounts = ["Player1"];
   String _currentAccount = "Player1";
+
+  // --- DONNÉES DES JEUX ---
+  final List<Game> games = [
+    Game(
+      name: "supertux",
+      imagePath: "assets/game/supertux.png",
+      command: "supertux",
+      accentColor: Colors.purpleAccent,
+    )
+  ];
 
   @override
   void initState() {
@@ -87,15 +112,15 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _executeCommand(String command) async {
     try {
-      final result = await Process.run('bash', ['-c', command]);
+      Process.start(command, []);
       setState(() {
-        _statusMessage = "Commande exécutée: $command";
+        _statusMessage = "Lancement de $command...";
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_statusMessage),
+          content: Text("🚀 Lancement: $command"),
           backgroundColor: Colors.green,
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 2),
         ),
       );
     } catch (e) {
@@ -104,7 +129,7 @@ class _HomePageState extends State<HomePage> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Erreur lors de l'exécution: $e"),
+          content: Text("❌ Erreur: $e"),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 3),
         ),
@@ -313,6 +338,103 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildGameCard(Game game) {
+    return GestureDetector(
+      onTap: () => _executeCommand(game.command),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: game.accentColor.withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    game.accentColor.withOpacity(0.3),
+                    game.accentColor.withOpacity(0.1),
+                  ],
+                ),
+                border: Border.all(
+                  color: game.accentColor.withOpacity(0.5),
+                  width: 2,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          game.accentColor,
+                          game.accentColor.withOpacity(0.6),
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: game.accentColor.withOpacity(0.4),
+                          blurRadius: 12,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.gamepad,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    game.name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      "Lancer",
+                      style: TextStyle(
+                        color: game.accentColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _timer.cancel();
@@ -328,7 +450,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             // --- TOP BAR ---
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
               decoration: BoxDecoration(
                 color: Colors.black87,
                 borderRadius: BorderRadius.circular(12),
@@ -366,19 +488,17 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.wifi, color: Colors.white),
-                      const SizedBox(width: 12),
-                      const Icon(Icons.battery_full, color: Colors.greenAccent),
                     ],
                   ),
                 ],
               ),
             ),
 
-            // --- MAIN CONTENT ---
+            // --- MAIN CONTENT - GRILLE DE JEUX ---
             Expanded(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -390,18 +510,24 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ),
-                child: const Center(
-                  child: Text(
-                    "📂 Contenu principal",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 0.85,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
                   ),
+                  itemCount: games.length,
+                  itemBuilder: (context, index) {
+                    return _buildGameCard(games[index]);
+                  },
                 ),
               ),
             ),
 
             // --- BOTTOM BAR ---
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               decoration: BoxDecoration(
                 color: Colors.black87,
                 borderRadius: BorderRadius.circular(12),
@@ -416,7 +542,8 @@ class _HomePageState extends State<HomePage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const SettingsPage()),
+                        MaterialPageRoute(
+                            builder: (_) => const SettingsPage()),
                       );
                     },
                     child: const Icon(Icons.settings,
