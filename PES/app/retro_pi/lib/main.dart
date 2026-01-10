@@ -10,13 +10,12 @@ void main() async {
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await windowManager.ensureInitialized();
 
-  const WindowOptions windowOptions = WindowOptions(
-    size: Size(1280, 720), // ou 1920, 1080 selon ton écran
-    minimumSize: Size(1280, 720),
-    maximumSize: Size(1280, 720),
+  WindowOptions(
+    fullScreen: false,
     titleBarStyle: TitleBarStyle.hidden,
-    backgroundColor: Colors.black,
+    size: Size(1280, 720),
   );
+
 
 
     windowManager.waitUntilReadyToShow(windowOptions, () async {
