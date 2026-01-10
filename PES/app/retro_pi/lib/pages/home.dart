@@ -12,10 +12,10 @@ void main() async {
     await windowManager.ensureInitialized();
 
     const WindowOptions windowOptions = WindowOptions(
-      fullScreen: true,                     // Plein écran total
-      titleBarStyle: TitleBarStyle.hidden, // Pas de barre de titre
+      fullScreen: true,
+      titleBarStyle: TitleBarStyle.hidden,
       backgroundColor: Colors.black,
-      skipTaskbar: true,                   // Optionnel (effet borne)
+      skipTaskbar: true,
     );
 
     windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -49,6 +49,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late Timer _timer;
   String _time = "";
+  String _statusMessage = "";
 
   List<String> _accounts = ["Player1"];
   String _currentAccount = "Player1";
@@ -82,6 +83,33 @@ class _HomePageState extends State<HomePage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList("accounts", _accounts);
     await prefs.setString("currentAccount", _currentAccount);
+  }
+
+  Future<void> _executeCommand(String command) async {
+    try {
+      final result = await Process.run('bash', ['-c', command]);
+      setState(() {
+        _statusMessage = "Commande exécutée: $command";
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_statusMessage),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _statusMessage = "Erreur: ${e.toString()}";
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erreur lors de l'exécution: $e"),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   void _showPlayerMenu() {
@@ -144,10 +172,11 @@ class _HomePageState extends State<HomePage> {
                       )),
                   const SizedBox(height: 15),
                   ElevatedButton.icon(
-                    onPressed: () async {
+                    onPressed: () {
                       final newName = "Player${_accounts.length + 1}";
                       setState(() => _accounts.add(newName));
                       _saveAccounts();
+                      Navigator.pop(context);
                     },
                     icon: const Icon(Icons.add),
                     label: const Text("Ajouter un joueur"),
@@ -184,16 +213,36 @@ class _HomePageState extends State<HomePage> {
                     icon: Icons.power_settings_new,
                     label: "Éteindre",
                     color: Colors.redAccent,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showConfirmDialog(
+                        "Éteindre",
+                        "Voulez-vous éteindre le système ?",
+                        () => _executeCommand("sudo shutdown -h now"),
+                      );
+                    },
                   ),
                   _buildPowerButton(
                     icon: Icons.bedtime,
                     label: "Veille",
                     color: Colors.amberAccent,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _executeCommand("sudo systemctl suspend");
+                    },
                   ),
                   _buildPowerButton(
                     icon: Icons.restart_alt,
                     label: "Redémarrer",
                     color: Colors.greenAccent,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showConfirmDialog(
+                        "Redémarrer",
+                        "Voulez-vous redémarrer le système ?",
+                        () => _executeCommand("sudo shutdown -r now"),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -204,35 +253,65 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _showConfirmDialog(
+    String title,
+    String message,
+    VoidCallback onConfirm,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Annuler"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onConfirm();
+            },
+            child: const Text("Confirmer"),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPowerButton({
     required IconData icon,
     required String label,
     required Color color,
+    required VoidCallback onTap,
   }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12), // réduit (avant 18)
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white12,
-            border: Border.all(color: color, width: 1.8),
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white12,
+              border: Border.all(color: color, width: 1.8),
+            ),
+            child: Icon(icon, color: color, size: 26),
           ),
-          child: Icon(icon, color: color, size: 26), // réduit (avant 32)
-        ),
-        const SizedBox(height: 6), // réduit l'espacement
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 13, // plus petit
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
-
 
   @override
   void dispose() {
@@ -284,7 +363,6 @@ class _HomePageState extends State<HomePage> {
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
-                          fontFeatures: [FontFeature.tabularFigures()],
                         ),
                       ),
                       const SizedBox(width: 12),
