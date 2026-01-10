@@ -10,14 +10,16 @@ void main() async {
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await windowManager.ensureInitialized();
 
-  WindowOptions(
-    fullScreen: false,
-    titleBarStyle: TitleBarStyle.hidden,
-    size: Size(1280, 720),
-  );
+    // ✅ On assigne les options à une variable
+    const WindowOptions windowOptions = WindowOptions(
+      fullScreen: false,               // pas de plein écran total
+      titleBarStyle: TitleBarStyle.hidden, // barre cachée mais fenêtre normale
+      size: Size(1280, 720),           // taille de la fenêtre
+      minimumSize: Size(1280, 720),
+      maximumSize: Size(1280, 720),
+    );
 
-
-
+    // On attend que la fenêtre soit prête, puis on applique
     windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();
       await windowManager.focus();
