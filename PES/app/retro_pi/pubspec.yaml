@@ -37,11 +37,8 @@ dependencies:
   openai_realtime_dart: ^0.0.6
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.6
-<<<<<<< HEAD
   window_manager: ^0.5.1
-=======
   shared_preferences: ^2.5.3
->>>>>>> ba6969af1bc10c9ac056380f8da7ff91ba95081b
 
 dev_dependencies:
   flutter_test:

@@ -1,15 +1,28 @@
 import 'dart:async';
 import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:window_size/window_size.dart'; // ajoute dans pubspec.yaml
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Format console fixe
-  setWindowMinSize(const Size(800, 480));
-  setWindowMaxSize(const Size(800, 480));
+  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+    await windowManager.ensureInitialized();
+
+    const WindowOptions windowOptions = WindowOptions(
+      fullScreen: true,                     // Plein écran total
+      titleBarStyle: TitleBarStyle.hidden, // Pas de barre de titre
+      backgroundColor: Colors.black,
+      skipTaskbar: true,                   // Optionnel (effet borne)
+    );
+
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
 
   runApp(const MyApp());
 }
